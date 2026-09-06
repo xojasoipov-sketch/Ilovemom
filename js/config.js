@@ -15,7 +15,7 @@ window.GIFT_CONFIG = {
     shortName: "Onajonim",
     birthYear: 1974,
     birthday: "2026-09-08",         // 8-sentyabr
-    heroPhoto: "assets/photos/hero.svg",
+    heroPhoto: "assets/photos/hero.jpg",
   },
 
   /* ---------- Kimdan ---------- */
@@ -59,44 +59,44 @@ window.GIFT_CONFIG = {
       year: "1974",
       title: "Boshlanish",
       text: "Sentyabr oyi, quyosh hali yoz sha'nini yo'qotmagan kunlardan birida dunyoga bitta qiz keldi. Hech kim bilmasdi — u kunlarning eng bebahosi edi.",
-      photo: "assets/photos/chapter-1.svg",
+      photo: "assets/photos/chapter-1.jpg",
     },
     {
       year: "1990-yillar",
       title: "Yoshlik",
       text: "Orzular katta, yo'llar uzun edi. Har bir qiyinchilik Sizni sindirmadi — aksincha, bugungi mustahkam, mehribon insonga aylantirdi.",
-      photo: "assets/photos/chapter-2.svg",
+      photo: "assets/photos/chapter-2.jpg",
     },
     {
       year: "Oila boshlanishi",
       title: "Ikki yurak, bitta uy",
       text: "Bir kun ikki taqdir birlashdi. Shu kundan boshlab bitta uy — issiq, xotirjam, doim kimningdir kulgisi eshitiladigan uyga aylandi.",
-      photo: "assets/photos/chapter-3.svg",
+      photo: "assets/photos/chapter-3.jpg",
     },
     {
       year: "Farzandlar davri",
       title: "Biz — Sizning davomingiz",
       text: "Keyin biz keldik. Tunlar uxlamay chiqdingiz, kunlar charchamay yugurdingiz. Har birimizning birinchi qadamimizda, birinchi so'zimizda Siz bor edingiz.",
-      photo: "assets/photos/chapter-4.svg",
+      photo: "assets/photos/chapter-4.jpg",
     },
     {
       year: "Bugun, 52 yosh",
       title: "Sizning kuningiz",
       text: "Endi o'g'illaringiz, qizlaringiz, kelinlaringiz va umr yo'ldoshingiz — hammamiz bir ovozdan aytamiz: rahmat Sizga, Onajonim. Bu kun — faqat Sizniki.",
-      photo: "assets/photos/chapter-5.svg",
+      photo: "assets/photos/chapter-5.jpg",
     },
   ],
 
   /* ---------- Xotiralar karuseli ---------- */
   gallery: [
-    { src: "assets/photos/memory-1.svg", caption: "Yosh onajonim" },
-    { src: "assets/photos/memory-2.svg", caption: "Bayram dasturxoni atrofida" },
-    { src: "assets/photos/memory-3.svg", caption: "Butun oila birga" },
-    { src: "assets/photos/memory-4.svg", caption: "Onajonim va farzandlari" },
-    { src: "assets/photos/memory-5.svg", caption: "Nevaralar bilan quvonch" },
-    { src: "assets/photos/memory-6.svg", caption: "Kulgi to'la kun" },
-    { src: "assets/photos/memory-7.svg", caption: "Umr yo'ldoshi bilan" },
-    { src: "assets/photos/memory-8.svg", caption: "Eng qadrli xotira" },
+    { src: "assets/photos/memory-1.jpg", caption: "Qishki sayohat" },
+    { src: "assets/photos/memory-2.jpg", caption: "O'g'illari bilan Samarqandda" },
+    { src: "assets/photos/memory-3.jpg", caption: "Bog'dagi quvnoq lahza" },
+    { src: "assets/photos/memory-4.jpg", caption: "Bog'ning hosili" },
+    { src: "assets/photos/memory-5.jpg", caption: "Farzandlari bilan bayram kechasi" },
+    { src: "assets/photos/memory-6.jpg", caption: "Oilaviy tabrik lahzasi" },
+    { src: "assets/photos/memory-7.jpg", caption: "Umr yo'ldoshi bilan" },
+    { src: "assets/photos/memory-8.jpg", caption: "Hazil-mutoyiba lahzasi" },
   ],
 
   /* ---------- Tabriklar ----------
