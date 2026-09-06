@@ -246,6 +246,9 @@
           <h3 class="chapter__title">${esc(ch.title)}</h3>
           <span class="chapter__year">${esc(ch.year)}</span>
           <p class="chapter__body">${esc(ch.text)}</p>
+          ${ch.audio ? `<button class="chapter__listen" type="button" data-chapter="${i}" aria-label="${esc(ch.title)} bobini tinglash">
+            <span class="chapter__listen-icon" aria-hidden="true">▶</span><span class="chapter__listen-label">Tinglash</span>
+          </button>` : ""}
         </div>
       </article>`).join("");
 
@@ -386,6 +389,9 @@
       caption.textContent = items[idx].caption || ""; dots.forEach((d, i) => d.classList.toggle("is-active", i === idx));
     }
     const go = (d) => { idx = (idx + d + n) % n; layout(); };
+    // Auto-plays continuously, even while hovered/focused — it only ever
+    // pauses while the reader is actively dragging a card (see pointerdown
+    // below), and restart() re-arms the countdown after any interaction.
     const restart = () => { clearInterval(timer); if (!REDUCED) timer = setInterval(() => { if (!paused) go(1); }, 4200); };
 
     function init() {
@@ -394,8 +400,7 @@
       $("#carousel-next").addEventListener("click", () => { go(1); restart(); });
       dots.forEach((d, i) => d.addEventListener("click", () => { idx = i; layout(); restart(); }));
       const wrap = $("#carousel");
-      wrap.addEventListener("mouseenter", () => (paused = true)); wrap.addEventListener("mouseleave", () => (paused = false));
-      wrap.addEventListener("focusin", () => (paused = true)); wrap.addEventListener("focusout", () => (paused = false));
+      document.addEventListener("visibilitychange", () => { paused = document.hidden; });
       wrap.tabIndex = 0;
       wrap.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") { go(1); restart(); } if (e.key === "ArrowLeft") { go(-1); restart(); } if (e.key === "Enter") openLightbox(idx); });
       stage.addEventListener("pointerdown", (e) => { dragX = e.clientX; });
@@ -505,6 +510,62 @@
       paper.classList.add("is-done");
     }, { threshold: 0.35 });
     io.observe(paper);
+  }
+
+  /* ------------------------------------------------------------------
+     Chapter narration — plays the recorded voice for a chapter, ducking
+     the background music. The header button chains all chapters:
+     auto-scrolls to each one in turn and keeps reading until the last
+     chapter ends (or the reader stops it).
+  ------------------------------------------------------------------ */
+  function initNarration() {
+    const chapters = C.chapters || [];
+    const toggleBtn = $("#narrate-toggle");
+    if (!toggleBtn || !chapters.some((c) => c.audio)) { if (toggleBtn) toggleBtn.hidden = true; return; }
+    const icon = $(".narrate-btn__icon", toggleBtn), label = $(".narrate-btn__label", toggleBtn);
+    let audio = null, sequence = false, currentIdx = -1;
+
+    function setChapterUI(i, playing) {
+      $$(".chapter__listen").forEach((b) => {
+        const isThis = +b.dataset.chapter === i && playing;
+        b.classList.toggle("is-playing", isThis);
+        $(".chapter__listen-icon", b).textContent = isThis ? "❚❚" : "▶";
+      });
+    }
+    function setToggleUI(playing) {
+      toggleBtn.classList.toggle("is-playing", playing);
+      icon.textContent = playing ? "❚❚" : "▶";
+      label.textContent = playing ? "To'xtatish" : "Hikoyani tinglang";
+    }
+    function stop() {
+      sequence = false; currentIdx = -1;
+      if (audio) { audio.pause(); audio.onended = null; audio = null; }
+      Music.duck(false);
+      setChapterUI(-1, false); setToggleUI(false);
+    }
+    function playChapter(i, asSequence) {
+      const ch = chapters[i];
+      if (!ch || !ch.audio) { stop(); return; }
+      if (audio) { audio.pause(); audio.onended = null; }
+      sequence = asSequence; currentIdx = i;
+      const el = $$(".chapter")[i];
+      if (el) el.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "center" });
+      Music.duck(true);
+      audio = new Audio(ch.audio);
+      audio.onended = () => {
+        if (sequence && i < chapters.length - 1) playChapter(i + 1, true); else stop();
+      };
+      audio.play().catch(() => stop());
+      setChapterUI(i, true); setToggleUI(asSequence);
+    }
+
+    toggleBtn.addEventListener("click", () => { sequence ? stop() : playChapter(0, true); });
+    $("#chapters").addEventListener("click", (e) => {
+      const btn = e.target.closest(".chapter__listen"); if (!btn) return;
+      const i = +btn.dataset.chapter;
+      if (audio && currentIdx === i) { stop(); return; }
+      playChapter(i, false);
+    });
   }
 
   /* ------------------------------------------------------------------
@@ -640,7 +701,7 @@
   function boot() {
     document.body.classList.add("is-locked");
     render(); initObservers(); Carousel.init(); initWishes(); initCake(); initLetter();
-    initScrollText(); initConstellation();
+    initScrollText(); initConstellation(); initNarration();
     fxEnvelope.start();
     $$("img").forEach((img) => img.addEventListener("error", () => { img.style.background = "linear-gradient(160deg,#7a2f3d,#d98b6c)"; img.alt = "Rasm topilmadi"; }, { once: true }));
     // Dev shortcut: ?skip=1 jumps straight into the site (for testing)
