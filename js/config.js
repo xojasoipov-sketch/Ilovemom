@@ -82,7 +82,7 @@ window.GIFT_CONFIG = {
     {
       year: "2009-yildan",
       title: "Uzoqdagi mehr",
-      text: "2009-yilda hayot og'ir sinov keltirdi: turmush o'rtog'ingiz kichik o'g'lingiz bilan mehnat qidirib Rossiyaga ketishga majbur bo'ldi, uchta farzand esa Siz bilan qoldi. Ayriliq og'ir edi, lekin Siz uyni yolg'iz tutib turdingiz — na sabringiz, na mehringiz bir zum ham kamaymadi.",
+      text: "2009-yilda hayot og'ir sinov keltirdi: Siz turmush o'rtog'ingiz va kenja o'g'lingiz bilan mehnat qidirib Rossiyaga ketishga majbur bo'ldingiz, uchta farzandingizni esa vatanda qoldirishga to'g'ri keldi. Ayriliq og'ir edi, lekin yuragingiz doim ular bilan edi — na sabringiz, na mehringiz bir zum ham kamaymadi.",
       photo: "assets/photos/chapter-4.jpg",
       audio: "assets/audio/chapter-4.mp3",
     },
