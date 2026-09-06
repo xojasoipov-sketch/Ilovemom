@@ -14,6 +14,45 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const rand = (a, b) => a + Math.random() * (b - a);
 
+  /* Cinematic scroll — native `scrollIntoView`/anchor jumps cover any
+     distance in the same short, fixed duration, so a long hop (skipping
+     several sections) looks like an abrupt cut instead of a glide. This
+     scales the duration to the distance instead, so every transition —
+     near or far — reads as one continuous, video-like motion. */
+  let scrollToken = 0;
+  function targetY(target) {
+    const rect = target.getBoundingClientRect();
+    const maxY = document.documentElement.scrollHeight - window.innerHeight;
+    return clamp(window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2, 0, maxY);
+  }
+  function smoothScrollTo(target) {
+    if (!target) return Promise.resolve();
+    const my = ++scrollToken; // cancels any smoothScrollTo still in flight
+    const startY = window.scrollY;
+    const distance0 = targetY(target) - startY;
+    if (Math.abs(distance0) < 2) return Promise.resolve();
+    const duration = clamp(Math.abs(distance0) * 0.55, 600, 2600);
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      (function step(now) {
+        if (my !== scrollToken) return resolve(); // a newer scroll took over
+        const t = clamp((now - t0) / duration, 0, 1);
+        // Re-measure the target every frame instead of aiming at a single
+        // upfront number — lazy-loaded images below (the 80+ photo album)
+        // keep shifting the page's height as they resolve, so a fixed
+        // target would make the glide quietly undershoot or overshoot.
+        const dest = targetY(target);
+        // behavior:"instant" is essential here — the page's own CSS
+        // scroll-behavior:smooth would otherwise re-animate every single
+        // per-frame step we set below, fighting this loop and making the
+        // whole glide stall then snap at the end instead of gliding.
+        window.scrollTo({ top: startY + (dest - startY) * ease(t), left: 0, behavior: "instant" });
+        if (t < 1) requestAnimationFrame(step); else resolve();
+      })(t0);
+    });
+  }
+
   /* ------------------------------------------------------------------
      Derived data
   ------------------------------------------------------------------ */
@@ -358,6 +397,14 @@
     }, { threshold: 0.45 });
     sections.forEach((s) => active.observe(s));
 
+    // Every same-page anchor (nav dots, the hero's scroll cue, …) glides
+    // through smoothScrollTo instead of the browser's fixed-duration jump.
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest('a[href^="#"]'); if (!a) return;
+      const dest = document.getElementById(a.getAttribute("href").slice(1)); if (!dest) return;
+      e.preventDefault(); smoothScrollTo(dest);
+    });
+
     const fxIO = new IntersectionObserver((entries) => entries.forEach((e) => {
       const fx = { hero: fxHero, story: fxStory, finale: fxFinale, cake: fxCake }[e.target.id]; if (!fx) return;
       if (e.isIntersecting) fx.start(); else fx.stop();
@@ -599,7 +646,7 @@
     function playSrc(src, scrollEl, onEnd) {
       if (audio) { audio.pause(); audio.onended = null; }
       setTourStop(true);
-      if (scrollEl) scrollEl.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "center" });
+      if (scrollEl) smoothScrollTo(scrollEl);
       Music.duck(true);
       audio = new Audio(src);
       audio.onended = onEnd;
