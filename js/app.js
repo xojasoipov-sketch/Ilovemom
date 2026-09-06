@@ -49,6 +49,15 @@
       this.p.push(base);
     }
     ambient(dt) {
+      // Universal soft fog — a slow, misty base atmosphere on every canvas
+      // regardless of its main mode (inspired by Noomo ValenTime's fog world).
+      this.fogAcc = (this.fogAcc || 0) + dt * 0.1 * (this.w / 900);
+      while (this.fogAcc > 1) {
+        this.fogAcc -= 1;
+        this.spawn("fog", rand(-this.w * 0.15, this.w * 1.15), rand(this.h * 0.05, this.h * 0.95), {
+          vx: rand(-5, 5), vy: rand(-3, 3), r: rand(90, Math.max(150, this.w * 0.28)), ttl: rand(18, 28),
+        });
+      }
       const rate = { petals: 0.9, dust: 1.6, hearts: 1.4 }[this.mode] || 0;
       if (!rate) return;
       this.spawnAcc += dt * rate * (this.w / 900);
@@ -95,7 +104,8 @@
         if (q.drag) { q.vx *= q.drag; q.vy *= q.drag; }
         if (q.sway) q.x += Math.sin(q.age * q.sway + q.ph) * 20 * dt;
         q.x += q.vx * dt; q.y += q.vy * dt; if (q.vr) q.rot += q.vr * dt;
-        if (q.y > h + 60 || q.x < -80 || q.x > w + 80) { this.p.splice(i, 1); continue; }
+        const margin = 80 + (q.r || 0);
+        if (q.y > h + margin || q.x < -margin || q.x > w + margin) { this.p.splice(i, 1); continue; }
         const t = q.ttl ? q.age / q.ttl : 0;
         const fade = t < 0.1 ? t / 0.1 : t > 0.75 ? 1 - (t - 0.75) / 0.25 : 1;
         ctx.save(); ctx.globalAlpha = clamp(fade, 0, 1);
@@ -116,6 +126,13 @@
           ctx.fillRect(-q.r, -q.r * 0.6, q.r * 2, q.r * 1.2);
         } else if (q.kind === "spark") {
           ctx.fillStyle = `hsla(${q.hue}, 90%, 70%, 1)`; ctx.shadowColor = `hsla(${q.hue}, 90%, 60%, 1)`; ctx.shadowBlur = 10;
+          ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, Math.PI * 2); ctx.fill();
+        } else if (q.kind === "fog") {
+          const grad = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.r);
+          grad.addColorStop(0, "rgba(246,234,216,0.055)");
+          grad.addColorStop(0.6, "rgba(212,166,96,0.03)");
+          grad.addColorStop(1, "rgba(212,166,96,0)");
+          ctx.fillStyle = grad;
           ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, Math.PI * 2); ctx.fill();
         }
         ctx.restore();
@@ -313,6 +330,7 @@
      Scroll: reveal, progress, active dot
   ------------------------------------------------------------------ */
   const fxHero = new FX($("#fx-hero"), "petals");
+  const fxStory = new FX($("#fx-story"), "dust");
   const fxCake = new FX($("#fx-cake"), "none");
   const fxFinale = new FX($("#fx-finale"), "hearts");
 
@@ -331,10 +349,10 @@
     sections.forEach((s) => active.observe(s));
 
     const fxIO = new IntersectionObserver((entries) => entries.forEach((e) => {
-      const fx = { hero: fxHero, finale: fxFinale, cake: fxCake }[e.target.id]; if (!fx) return;
+      const fx = { hero: fxHero, story: fxStory, finale: fxFinale, cake: fxCake }[e.target.id]; if (!fx) return;
       if (e.isIntersecting) fx.start(); else fx.stop();
     }), { threshold: 0.05 });
-    ["hero", "finale", "cake"].forEach((id) => fxIO.observe($(`#${id}`)));
+    ["hero", "story", "finale", "cake"].forEach((id) => fxIO.observe($(`#${id}`)));
 
     const bar = $("#progress-bar"); let ticking = false;
     const onScroll = () => { if (ticking) return; ticking = true; requestAnimationFrame(() => {
@@ -342,7 +360,7 @@
       bar.style.width = `${max > 0 ? (window.scrollY / max) * 100 : 0}%`; ticking = false; }); };
     window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
-    document.addEventListener("visibilitychange", () => { if (document.hidden) [fxHero, fxCake, fxFinale].forEach((f) => f.stop()); });
+    document.addEventListener("visibilitychange", () => { if (document.hidden) [fxHero, fxStory, fxCake, fxFinale].forEach((f) => f.stop()); });
   }
 
   /* ------------------------------------------------------------------
@@ -490,11 +508,139 @@
   }
 
   /* ------------------------------------------------------------------
+     Scroll-linked caption reveal (chapter titles/body unveil word-by-word
+     as the reader scrolls past them — inspired by Noomo ValenTime's
+     caption pacing, done here with plain CSS transforms, no WebGL).
+  ------------------------------------------------------------------ */
+  function initScrollText() {
+    if (REDUCED) return;
+    const targets = $$(".chapter__title, .chapter__body");
+    if (!targets.length) return;
+    targets.forEach((el) => {
+      const words = el.textContent.split(/(\s+)/);
+      el.innerHTML = words.map((w) => (w.trim() ? `<span class="sw">${esc(w)}</span>` : w)).join("");
+      el._sw = $$(".sw", el);
+    });
+    let active = new Set(); let ticking = false;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) active.add(e.target); else active.delete(e.target); });
+    }, { rootMargin: "10% 0px 10% 0px" });
+    targets.forEach((el) => io.observe(el));
+
+    function update() {
+      ticking = false;
+      const vh = window.innerHeight;
+      active.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        // Use the block's own center (not just its top) so a short paragraph
+        // that has already scrolled mostly into view reads as "revealed" —
+        // landing here via a nav-dot jump must never show half-faded text.
+        const center = rect.top + rect.height / 2;
+        const start = vh * 0.88, end = vh * 0.5;
+        const p = clamp((start - center) / (start - end), 0, 1);
+        const words = el._sw; const n = Math.max(1, words.length);
+        for (let i = 0; i < n; i++) {
+          const stagger = 1.15;
+          const wp = clamp(p * stagger - (i / n) * (stagger - 1), 0, 1);
+          const w = words[i];
+          w.style.opacity = String((0.12 + wp * 0.88).toFixed(3));
+          w.style.filter = wp < 1 ? `blur(${((1 - wp) * 3).toFixed(2)}px)` : "";
+          w.style.transform = wp < 1 ? `translateY(${((1 - wp) * 8).toFixed(2)}px)` : "";
+        }
+      });
+    }
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    onScroll();
+  }
+
+  /* ------------------------------------------------------------------
+     Finale constellation — one soft star per family voice (from.names).
+     Tap/click to light it; lighting all of them is the site's small
+     closing "act of creation" (a 2D echo of Noomo's heart customizer).
+  ------------------------------------------------------------------ */
+  function initConstellation() {
+    const names = (C.from && C.from.names) || [];
+    const wrap = $("#constellation"), canvas = $("#constellation-canvas"), hint = $("#constellation-hint");
+    if (!names.length || !wrap || !canvas) { if (hint) hint.hidden = true; return; }
+    const ctx = canvas.getContext("2d");
+    let stars = [], lit = new Array(names.length).fill(false), dpr = 1, chimeCtx = null;
+
+    hint.textContent = "Har birini bosib, oila nurini yoqing";
+
+    function heartPoint(t) {
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+      return { x, y };
+    }
+    function layout() {
+      const r = wrap.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, r.width * dpr); canvas.height = Math.max(1, r.height * dpr);
+      canvas.style.width = `${r.width}px`; canvas.style.height = `${r.height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const scale = Math.min(r.width, r.height) / 38;
+      const cx = r.width / 2, cy = r.height / 2 + r.height * 0.05;
+      stars = names.map((n, i) => {
+        const t = -Math.PI / 2 + (i / names.length) * Math.PI * 2;
+        const p = heartPoint(t);
+        return { x: cx + p.x * scale, y: cy + p.y * scale, name: n };
+      });
+      draw();
+    }
+    function draw() {
+      const r = wrap.getBoundingClientRect();
+      ctx.clearRect(0, 0, r.width, r.height);
+      stars.forEach((s, i) => {
+        const on = lit[i];
+        const glowR = on ? 20 : 9;
+        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
+        if (on) { grad.addColorStop(0, "rgba(255,224,153,0.95)"); grad.addColorStop(0.45, "rgba(212,166,96,0.7)"); grad.addColorStop(1, "rgba(212,166,96,0)"); }
+        else { grad.addColorStop(0, "rgba(246,234,216,0.5)"); grad.addColorStop(1, "rgba(246,234,216,0)"); }
+        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(s.x, s.y, glowR, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = on ? "#fff3d6" : "rgba(246,234,216,0.65)";
+        ctx.beginPath(); ctx.arc(s.x, s.y, on ? 4 : 2.6, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    function chime(freq) {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+        chimeCtx = chimeCtx || new AC();
+        const o = chimeCtx.createOscillator(), g = chimeCtx.createGain();
+        o.type = "sine"; o.frequency.value = freq;
+        const t = chimeCtx.currentTime;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.1, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+        o.connect(g); g.connect(chimeCtx.destination); o.start(t); o.stop(t + 1.2);
+      } catch {}
+    }
+    function lightStar(i) {
+      if (lit[i]) return; lit[i] = true; draw(); chime(392 + i * 55);
+      const li = $$("#finale-names li")[i]; if (li) li.classList.add("is-lit");
+      Music.duck(true); setTimeout(() => Music.duck(false), 350);
+      if (lit.every(Boolean)) {
+        hint.textContent = "Oilangizning nuri to'ldi ♥"; hint.classList.add("is-done");
+        const r = wrap.getBoundingClientRect(); fxFinale.confettiBurst(r.width / 2, r.height * 0.35, 90);
+      }
+    }
+    canvas.addEventListener("click", (e) => {
+      const r = canvas.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top;
+      let best = -1, bd = 32;
+      stars.forEach((s, i) => { const d = Math.hypot(s.x - x, s.y - y); if (d < bd) { bd = d; best = i; } });
+      if (best >= 0) lightStar(best);
+    });
+    window.addEventListener("resize", layout, { passive: true });
+    const io = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { layout(); io.disconnect(); } }, { threshold: 0.25 });
+    io.observe(wrap);
+  }
+
+  /* ------------------------------------------------------------------
      Boot
   ------------------------------------------------------------------ */
   function boot() {
     document.body.classList.add("is-locked");
     render(); initObservers(); Carousel.init(); initWishes(); initCake(); initLetter();
+    initScrollText(); initConstellation();
     fxEnvelope.start();
     $$("img").forEach((img) => img.addEventListener("error", () => { img.style.background = "linear-gradient(160deg,#7a2f3d,#d98b6c)"; img.alt = "Rasm topilmadi"; }, { once: true }));
     // Dev shortcut: ?skip=1 jumps straight into the site (for testing)
