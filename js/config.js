@@ -70,7 +70,7 @@ window.GIFT_CONFIG = {
       audio: "assets/audio/chapter-2.mp3",
     },
     {
-      year: "1993–2009",
+      year: "1993–2005",
       title: "To'rt farzand, bitta yurak",
       text: "Bir-birin ketidan to'rtta farzand keldi. Tunlar uxlamay chiqdingiz, kunlar charchamay yugurdingiz. Har birimizning birinchi qadamimizda, birinchi so'zimizda Siz bor edingiz.",
       photo: "assets/photos/chapter-3.jpg",
@@ -79,7 +79,7 @@ window.GIFT_CONFIG = {
     {
       year: "2009-yildan",
       title: "Uzoqdagi mehr",
-      text: "2009-yildan boshlab hayot bizni Rossiyaga olib bordi. Farzandlaringiz umrining katta qismi u yerda o'tdi — sog'inch bilan, mehnat bilan, lekin hech qachon bir-birimizdan uzoqlashmagan yurak bilan. Siz uzoqda bo'lsangiz ham, doim eng yaqinimiz edingiz.",
+      text: "2009-yilda hayot og'ir sinov keltirdi: turmush o'rtog'ingiz kichik o'g'lingiz bilan mehnat qidirib Rossiyaga ketishga majbur bo'ldi, uchta farzand esa Siz bilan qoldi. Ayriliq og'ir edi, lekin Siz uyni yolg'iz tutib turdingiz — na sabringiz, na mehringiz bir zum ham kamaymadi.",
       photo: "assets/photos/chapter-4.jpg",
       audio: "assets/audio/chapter-4.mp3",
     },
