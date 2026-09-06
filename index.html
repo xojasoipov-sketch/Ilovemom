@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Onajon — Sizning hikoyangiz</title>
+  <meta name="description" content="Onajonga tug'ilgan kuni munosabati bilan oiladan kinematik sovg'a: hikoya, xotiralar, tabriklar va musiqa.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1a0f14">
+  <meta property="og:title" content="Onajon — Sizning hikoyangiz">
+  <meta property="og:description" content="Tug'ilgan kuningiz muborak, Onajon. Bu sayt Siz uchun.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/photos/hero.svg">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Film grain + vignette overlays -->
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <!-- ============ 1. ENVELOPE (kirish) ============ -->
+  <div id="envelope-screen" class="envelope-screen" role="dialog" aria-modal="true" aria-labelledby="envelope-to">
+    <canvas class="fx-canvas" id="fx-envelope" aria-hidden="true"></canvas>
+    <button id="envelope" class="envelope" type="button" aria-label="Konvertni ochish">
+      <span class="envelope__back"></span>
+      <span class="envelope__letter">
+        <span class="envelope__letter-line"></span>
+        <span class="envelope__letter-line"></span>
+        <span class="envelope__letter-line short"></span>
+      </span>
+      <span class="envelope__front"></span>
+      <span class="envelope__flap"></span>
+      <span class="envelope__seal" id="envelope-seal">♥</span>
+    </button>
+    <p id="envelope-to" class="envelope__to script"></p>
+    <p class="envelope__hint" id="envelope-hint"></p>
+  </div>
+
+  <!-- ============ 2. INTRO (kino-titrlar) ============ -->
+  <div id="intro-screen" class="intro-screen" aria-live="polite" hidden>
+    <p class="intro__line" id="intro-line"></p>
+    <button class="intro__skip" id="intro-skip" type="button">O'tkazib yuborish →</button>
+  </div>
+
+  <!-- ============ Fixed UI ============ -->
+  <div class="progress" aria-hidden="true"><div class="progress__bar" id="progress-bar"></div></div>
+
+  <nav class="dots" id="dots" aria-label="Bo'limlar"></nav>
+
+  <div class="player" id="player" hidden>
+    <button class="player__disc" id="player-toggle" type="button" aria-pressed="false" aria-label="Musiqani to'xtatish / davom ettirish">
+      <span class="player__vinyl"><span class="player__label"></span></span>
+    </button>
+    <div class="player__meta">
+      <span class="player__title" id="player-title"></span>
+      <span class="player__artist" id="player-artist"></span>
+    </div>
+    <div class="player__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <main id="main" class="main" hidden>
+
+    <!-- 3. HERO -->
+    <section class="hero section" id="hero" data-nav="Bosh">
+      <canvas class="fx-canvas" id="fx-hero" aria-hidden="true"></canvas>
+      <div class="hero__photo" id="hero-photo"></div>
+      <div class="hero__content">
+        <p class="hero__eyebrow reveal">Tug'ilgan kuningiz muborak</p>
+        <h1 class="hero__name script reveal" id="hero-name"></h1>
+        <p class="hero__years reveal" id="hero-years"></p>
+        <p class="hero__sub reveal" id="hero-sub"></p>
+      </div>
+      <a class="scroll-cue" href="#story" aria-label="Hikoyaga o'tish">
+        <span></span>
+      </a>
+    </section>
+
+    <!-- 4. STORY (love story boblari) -->
+    <section class="story section" id="story" data-nav="Hikoya">
+      <header class="section__head">
+        <p class="section__eyebrow reveal">Birinchi qism</p>
+        <h2 class="section__title reveal">Sizning hikoyangiz</h2>
+      </header>
+      <div class="story__line" aria-hidden="true"></div>
+      <div id="chapters" class="chapters"></div>
+    </section>
+
+    <!-- 5. GALLERY (3D karusel) -->
+    <section class="gallery section" id="gallery" data-nav="Xotiralar">
+      <header class="section__head">
+        <p class="section__eyebrow reveal">Ikkinchi qism</p>
+        <h2 class="section__title reveal">Xotiralar</h2>
+      </header>
+      <div class="carousel" id="carousel" aria-roledescription="karusel" aria-label="Xotira rasmlari">
+        <div class="carousel__stage" id="carousel-stage"></div>
+        <button class="carousel__btn carousel__btn--prev" id="carousel-prev" type="button" aria-label="Oldingi rasm">‹</button>
+        <button class="carousel__btn carousel__btn--next" id="carousel-next" type="button" aria-label="Keyingi rasm">›</button>
+      </div>
+      <p class="carousel__caption" id="carousel-caption" aria-live="polite"></p>
+      <div class="carousel__dots" id="carousel-dots"></div>
+    </section>
+
+    <!-- 6. WISHES -->
+    <section class="wishes section" id="wishes" data-nav="Tabriklar">
+      <header class="section__head">
+        <p class="section__eyebrow reveal">Uchinchi qism</p>
+        <h2 class="section__title reveal">Yuraklardan tabriklar</h2>
+      </header>
+      <div id="wishes-grid" class="wishes__grid"></div>
+    </section>
+
+    <!-- 7. CAKE -->
+    <section class="cake section" id="cake" data-nav="Shamlar">
+      <canvas class="fx-canvas" id="fx-cake" aria-hidden="true"></canvas>
+      <header class="section__head">
+        <p class="section__eyebrow reveal">To'rtinchi qism</p>
+        <h2 class="section__title reveal" id="cake-heading"></h2>
+        <p class="section__sub reveal" id="cake-sub"></p>
+      </header>
+
+      <div class="cake__scene" id="cake-scene">
+        <div class="cake__plate"></div>
+        <div class="cake__body">
+          <div class="cake__layer cake__layer--bottom"></div>
+          <div class="cake__layer cake__layer--middle"></div>
+          <div class="cake__layer cake__layer--top"></div>
+          <div class="cake__cream"></div>
+          <div class="cake__candles" id="candles"></div>
+        </div>
+      </div>
+
+      <div class="cake__controls">
+        <button class="blow" id="blow-btn" type="button">
+          <span class="blow__ring"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46"/></svg></span>
+          <span class="blow__text" id="blow-text"></span>
+        </button>
+        <p class="cake__hint">Bosib turing</p>
+      </div>
+
+      <div class="cake__reveal" id="cake-reveal" aria-live="assertive">
+        <p class="cake__age"><span id="cake-age">0</span><small>yosh</small></p>
+        <h3 class="cake__reveal-title script" id="cake-reveal-title"></h3>
+      </div>
+    </section>
+
+    <!-- 8. LETTER -->
+    <section class="letter section" id="letter" data-nav="Xat">
+      <div class="paper reveal" id="paper">
+        <p class="paper__greeting script" id="letter-greeting"></p>
+        <div class="paper__body" id="letter-body"></div>
+        <p class="paper__closing" id="letter-closing"></p>
+        <p class="paper__sign script" id="letter-sign"></p>
+      </div>
+    </section>
+
+    <!-- 9. FINALE -->
+    <section class="finale section" id="finale" data-nav="Yakun">
+      <canvas class="fx-canvas" id="fx-finale" aria-hidden="true"></canvas>
+      <div class="finale__content">
+        <h2 class="finale__title script reveal" id="finale-heading"></h2>
+        <p class="finale__sub reveal" id="finale-sub"></p>
+        <ul class="finale__names reveal" id="finale-names"></ul>
+        <button class="btn-ghost reveal" id="replay" type="button"></button>
+      </div>
+      <footer class="footer">
+        <span>Mehr bilan yaratildi</span> <span aria-hidden="true">♥</span> <span id="footer-year"></span>
+      </footer>
+    </section>
+
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Rasm" hidden>
+    <button class="lightbox__close" id="lightbox-close" type="button" aria-label="Yopish">×</button>
+    <img id="lightbox-img" alt="">
+    <p class="lightbox__caption" id="lightbox-caption"></p>
+  </div>
+
+  <audio id="audio" preload="auto" loop></audio>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
