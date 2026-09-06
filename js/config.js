@@ -36,6 +36,9 @@ window.GIFT_CONFIG = {
     volume: 0.7,
   },
 
+  /* Kino-titrlar ovozi (ixtiyoriy) — bo'lmasa faqat matn animatsiyasi ko'rinadi */
+  introAudio: "assets/audio/intro.mp3",
+
   /* ---------- Konvert / kirish ---------- */
   envelope: {
     to: "Eng aziz Onajonimga",
@@ -254,6 +257,7 @@ window.GIFT_CONFIG = {
       "Har bir tongingiz quvonchli, har bir kuningiz sog'lik va baxtga to'la bo'lsin. Qayerda bo'lsak ham, yuragimiz doim Sizning yoningizda.",
     ],
     closing: "Sizni cheksiz sevamiz, Onajonim.",
+    audio: "assets/audio/letter.mp3",
   },
 
   /* ---------- Yakun ---------- */

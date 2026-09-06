@@ -295,11 +295,16 @@
   ------------------------------------------------------------------ */
   const envelopeScreen = $("#envelope-screen"), envelope = $("#envelope"), introScreen = $("#intro-screen"), introLine = $("#intro-line"), main = $("#main");
   const fxEnvelope = new FX($("#fx-envelope"), "dust");
-  let introToken = 0;
+  let introToken = 0, introAudioInstance = null;
 
   async function playIntro() {
     const my = ++introToken; const lines = C.intro || [];
     introScreen.hidden = false; introScreen.classList.remove("is-hidden");
+    if (C.introAudio) {
+      introAudioInstance = new Audio(C.introAudio);
+      Music.duck(true);
+      introAudioInstance.play().catch(() => {});
+    }
     for (const text of lines) {
       if (my !== introToken) return;
       introLine.textContent = text; introLine.classList.add("is-on");
@@ -310,11 +315,13 @@
   }
   function endIntro() {
     introToken++;
+    if (introAudioInstance) { introAudioInstance.pause(); introAudioInstance = null; }
     introScreen.classList.add("is-hidden");
     document.body.classList.remove("is-locked");
     setTimeout(() => { introScreen.hidden = true; }, 1500);
     window.scrollTo({ top: 0, behavior: "auto" });
     fxHero.start();
+    setTimeout(() => Narrator.autoStart(), 1400);
   }
   function openEnvelope() {
     if (envelope.classList.contains("is-open")) return;
@@ -554,17 +561,19 @@
   }
 
   /* ------------------------------------------------------------------
-     Chapter narration — plays the recorded voice for a chapter, ducking
-     the background music. The header button chains all chapters:
-     auto-scrolls to each one in turn and keeps reading until the last
-     chapter ends (or the reader stops it).
+     Narrator — orchestrates the whole guided "movie": intro → each
+     chapter (auto-scrolling to it) → the letter, one after another,
+     ducking the background music throughout. It starts on its own once
+     the intro ends, and a persistent on-screen button lets the reader
+     stop it at any point. Clicking a single "Tinglash" button takes
+     over from that spot without restarting the whole tour.
   ------------------------------------------------------------------ */
-  function initNarration() {
+  const Narrator = (() => {
     const chapters = C.chapters || [];
-    const toggleBtn = $("#narrate-toggle");
-    if (!toggleBtn || !chapters.some((c) => c.audio)) { if (toggleBtn) toggleBtn.hidden = true; return; }
-    const icon = $(".narrate-btn__icon", toggleBtn), label = $(".narrate-btn__label", toggleBtn);
-    let audio = null, sequence = false, currentIdx = -1;
+    const toggleBtn = $("#narrate-toggle"), tourStop = $("#tour-stop");
+    const icon = toggleBtn ? $(".narrate-btn__icon", toggleBtn) : null;
+    const label = toggleBtn ? $(".narrate-btn__label", toggleBtn) : null;
+    let audio = null, chaining = false, currentChapter = -1;
 
     function setChapterUI(i, playing) {
       $$(".chapter__listen").forEach((b) => {
@@ -574,40 +583,58 @@
       });
     }
     function setToggleUI(playing) {
+      if (!toggleBtn) return;
       toggleBtn.classList.toggle("is-playing", playing);
       icon.textContent = playing ? "❚❚" : "▶";
       label.textContent = playing ? "To'xtatish" : "Hikoyani tinglang";
     }
+    function setTourStop(on) { if (tourStop) tourStop.hidden = !on; }
+
     function stop() {
-      sequence = false; currentIdx = -1;
+      chaining = false; currentChapter = -1;
       if (audio) { audio.pause(); audio.onended = null; audio = null; }
       Music.duck(false);
-      setChapterUI(-1, false); setToggleUI(false);
+      setChapterUI(-1, false); setToggleUI(false); setTourStop(false);
     }
-    function playChapter(i, asSequence) {
-      const ch = chapters[i];
-      if (!ch || !ch.audio) { stop(); return; }
+    function playSrc(src, scrollEl, onEnd) {
       if (audio) { audio.pause(); audio.onended = null; }
-      sequence = asSequence; currentIdx = i;
-      const el = $$(".chapter")[i];
-      if (el) el.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "center" });
+      setTourStop(true);
+      if (scrollEl) scrollEl.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "center" });
       Music.duck(true);
-      audio = new Audio(ch.audio);
-      audio.onended = () => {
-        if (sequence && i < chapters.length - 1) playChapter(i + 1, true); else stop();
-      };
+      audio = new Audio(src);
+      audio.onended = onEnd;
       audio.play().catch(() => stop());
-      setChapterUI(i, true); setToggleUI(asSequence);
+    }
+    function playLetter() {
+      const src = C.letter && C.letter.audio;
+      currentChapter = -1; setChapterUI(-1, false); setToggleUI(false);
+      if (!src) { stop(); return; }
+      playSrc(src, $("#paper"), stop);
+    }
+    function playChapter(i, chain) {
+      const ch = chapters[i];
+      if (!ch || !ch.audio) { chain ? playLetter() : stop(); return; }
+      chaining = chain; currentChapter = i;
+      setChapterUI(i, true); setToggleUI(chain);
+      playSrc(ch.audio, $$(".chapter")[i], () => {
+        if (chain && i < chapters.length - 1) playChapter(i + 1, true);
+        else if (chain) playLetter();
+        else stop();
+      });
     }
 
-    toggleBtn.addEventListener("click", () => { sequence ? stop() : playChapter(0, true); });
-    $("#chapters").addEventListener("click", (e) => {
+    toggleBtn && toggleBtn.addEventListener("click", () => { chaining ? stop() : playChapter(0, true); });
+    tourStop && tourStop.addEventListener("click", stop);
+    $("#chapters") && $("#chapters").addEventListener("click", (e) => {
       const btn = e.target.closest(".chapter__listen"); if (!btn) return;
       const i = +btn.dataset.chapter;
-      if (audio && currentIdx === i) { stop(); return; }
+      if (audio && currentChapter === i) { stop(); return; }
       playChapter(i, false);
     });
-  }
+    if (toggleBtn && !chapters.some((c) => c.audio)) toggleBtn.hidden = true;
+
+    return { autoStart: () => playChapter(0, true), stop };
+  })();
 
   /* ------------------------------------------------------------------
      Scroll-linked caption reveal (chapter titles/body unveil word-by-word
@@ -742,7 +769,7 @@
   function boot() {
     document.body.classList.add("is-locked");
     render(); initObservers(); Carousel.init(); initWishes(); initCake(); initLetter();
-    initScrollText(); initConstellation(); initNarration(); initAlbum(); initFloatingPhotos();
+    initScrollText(); initConstellation(); initAlbum(); initFloatingPhotos();
     fxEnvelope.start();
     $$("img").forEach((img) => img.addEventListener("error", () => { img.style.background = "linear-gradient(160deg,#7a2f3d,#d98b6c)"; img.alt = "Rasm topilmadi"; }, { once: true }));
     // Dev shortcut: ?skip=1 jumps straight into the site (for testing)
