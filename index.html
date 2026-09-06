@@ -69,6 +69,7 @@
     <!-- 3. HERO -->
     <section class="hero section" id="hero" data-nav="Bosh">
       <canvas class="fx-canvas" id="fx-hero" aria-hidden="true"></canvas>
+      <div class="float-layer" id="float-hero" aria-hidden="true"></div>
       <div class="hero__photo" id="hero-photo"></div>
       <div class="hero__content">
         <p class="hero__eyebrow reveal">Tug'ilgan kuningiz muborak</p>
@@ -111,10 +112,20 @@
       <div class="carousel__dots" id="carousel-dots"></div>
     </section>
 
+    <!-- 5.5 ALBUM (deyarli barcha rasmlar - sochilib yotgan xotiralar devori) -->
+    <section class="albumsec section" id="album" data-nav="Albom">
+      <header class="section__head">
+        <p class="section__eyebrow reveal">Uchinchi qism</p>
+        <h2 class="section__title reveal">Har bir lahza qadrli</h2>
+        <p class="section__sub reveal">Yig'ilgan har bir surat — bir xotira, bir tabassum, bir kun.</p>
+      </header>
+      <div id="album-grid" class="albumsec__grid"></div>
+    </section>
+
     <!-- 6. WISHES -->
     <section class="wishes section" id="wishes" data-nav="Tabriklar">
       <header class="section__head">
-        <p class="section__eyebrow reveal">Uchinchi qism</p>
+        <p class="section__eyebrow reveal">To'rtinchi qism</p>
         <h2 class="section__title reveal">Yuraklardan tabriklar</h2>
       </header>
       <div id="wishes-grid" class="wishes__grid"></div>
@@ -124,7 +135,7 @@
     <section class="cake section" id="cake" data-nav="Shamlar">
       <canvas class="fx-canvas" id="fx-cake" aria-hidden="true"></canvas>
       <header class="section__head">
-        <p class="section__eyebrow reveal">To'rtinchi qism</p>
+        <p class="section__eyebrow reveal">Beshinchi qism</p>
         <h2 class="section__title reveal" id="cake-heading"></h2>
         <p class="section__sub reveal" id="cake-sub"></p>
       </header>
@@ -167,6 +178,7 @@
     <!-- 9. FINALE -->
     <section class="finale section" id="finale" data-nav="Yakun">
       <canvas class="fx-canvas" id="fx-finale" aria-hidden="true"></canvas>
+      <div class="float-layer" id="float-finale" aria-hidden="true"></div>
       <div class="finale__content">
         <h2 class="finale__title script reveal" id="finale-heading"></h2>
         <p class="finale__sub reveal" id="finale-sub"></p>

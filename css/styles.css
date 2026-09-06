@@ -394,6 +394,56 @@ ul { padding: 0; list-style: none; }
    5. GALLERY — 3D carousel
    ===================================================================== */
 .gallery { overflow: hidden; }
+
+/* =====================================================================
+   ALBUM — "sochilib yotgan xotiralar" devori (deyarli barcha rasmlar)
+   ===================================================================== */
+.albumsec { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-3) 55%, var(--bg) 100%); }
+.albumsec__grid {
+  max-width: 1400px; margin: 0 auto;
+  columns: 5 260px; column-gap: 22px;
+}
+@media (max-width: 1100px) { .albumsec__grid { columns: 3 200px; } }
+@media (max-width: 620px) { .albumsec__grid { columns: 2 140px; column-gap: 14px; } }
+
+.albumsec__item {
+  display: block; width: 100%; break-inside: avoid; margin: 0 0 22px;
+  padding: 10px 10px 26px; background: #fbf6ee; border-radius: 3px;
+  box-shadow: 0 16px 34px rgba(0,0,0,0.4);
+  border: 0; cursor: pointer;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.4s var(--ease-out), box-shadow 0.4s;
+}
+.albumsec__item:hover, .albumsec__item:focus-visible {
+  transform: rotate(0deg) scale(1.04) translateY(-4px);
+  box-shadow: 0 26px 50px rgba(0,0,0,0.5);
+  z-index: 2; position: relative;
+}
+.albumsec__item img { width: 100%; display: block; border-radius: 1px; filter: sepia(0.08) saturate(0.95); }
+
+/* =====================================================================
+   FLOATING PHOTOS — small polaroids drifting through the atmosphere
+   (the "havodagi rasimlar" effect, Noomo-style but with real memories)
+   ===================================================================== */
+.float-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+.float-photo {
+  position: absolute; width: var(--fs, 70px); padding: 5px 5px 14px; background: #fbf6ee;
+  border-radius: 2px; box-shadow: 0 14px 30px rgba(0,0,0,0.4);
+  opacity: 0; filter: blur(0.4px) sepia(0.12);
+  animation: floatDrift var(--fd, 26s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  left: var(--fx, 10%); top: var(--fy, 10%);
+  will-change: transform, opacity;
+}
+.float-photo img { width: 100%; display: block; border-radius: 1px; }
+@keyframes floatDrift {
+  0%   { transform: translate(0, 12vh) rotate(var(--r0, -6deg)) scale(0.9); opacity: 0; }
+  10%  { opacity: var(--fo, 0.5); }
+  50%  { transform: translate(var(--dx, 30px), -8vh) rotate(var(--r1, 4deg)) scale(1); }
+  90%  { opacity: var(--fo, 0.5); }
+  100% { transform: translate(calc(var(--dx, 30px) * 1.6), -22vh) rotate(var(--r2, -3deg)) scale(0.92); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .float-layer { display: none; } }
 .carousel { position: relative; height: clamp(360px, 60vh, 560px); perspective: 1400px; }
 .carousel__stage { position: absolute; inset: 0; transform-style: preserve-3d; }
 .card {

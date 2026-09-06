@@ -419,9 +419,12 @@
      Lightbox
   ------------------------------------------------------------------ */
   const lb = $("#lightbox"), lbImg = $("#lightbox-img"), lbCap = $("#lightbox-caption");
+  function showLightbox(src, caption) {
+    lbImg.src = src; lbImg.alt = caption || ""; lbCap.textContent = caption || ""; lb.hidden = false; document.body.classList.add("is-locked"); $("#lightbox-close").focus();
+  }
   function openLightbox(i) {
     const g = (C.gallery || [])[i]; if (!g) return;
-    lbImg.src = g.src; lbImg.alt = g.caption || ""; lbCap.textContent = g.caption || ""; lb.hidden = false; document.body.classList.add("is-locked"); $("#lightbox-close").focus();
+    showLightbox(g.src, g.caption);
   }
   function closeLightbox() { lb.hidden = true; document.body.classList.remove("is-locked"); $("#carousel").focus({ preventScroll: true }); }
   $("#lightbox-close").addEventListener("click", closeLightbox);
@@ -510,6 +513,44 @@
       paper.classList.add("is-done");
     }, { threshold: 0.35 });
     io.observe(paper);
+  }
+
+  /* ------------------------------------------------------------------
+     Album — "sochilib yotgan xotiralar" devori (deyarli barcha rasmlar)
+  ------------------------------------------------------------------ */
+  function initAlbum() {
+    const items = C.album || []; const grid = $("#album-grid");
+    if (!grid || !items.length) return;
+    grid.innerHTML = items.map((a, i) => `
+      <button class="albumsec__item" type="button" style="--tilt:${rand(-4, 4).toFixed(2)}deg" data-i="${i}" aria-label="Oilaviy xotira ${i + 1}">
+        <img src="${esc(a.thumb)}" alt="Oilaviy xotira ${i + 1}" loading="lazy" decoding="async">
+      </button>`).join("");
+    grid.addEventListener("click", (e) => {
+      const btn = e.target.closest(".albumsec__item"); if (!btn) return;
+      const a = items[+btn.dataset.i]; if (a) showLightbox(a.full, "");
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     Floating photos — small polaroids drifting through the hero/finale
+     atmosphere, picked at random from the family album on every visit.
+  ------------------------------------------------------------------ */
+  function initFloatingPhotos() {
+    const items = C.album || []; if (!items.length || REDUCED) return;
+    const fill = (sel, count) => {
+      const layer = $(sel); if (!layer) return;
+      const pool = items.slice().sort(() => Math.random() - 0.5).slice(0, count);
+      layer.innerHTML = pool.map((a) => {
+        const style = [
+          `--fs:${Math.round(rand(56, 96))}px`, `--fx:${rand(4, 88).toFixed(1)}%`, `--fy:${rand(6, 82).toFixed(1)}%`,
+          `--fd:${rand(24, 42).toFixed(1)}s`, `--delay:${rand(-30, 2).toFixed(1)}s`, `--dx:${rand(-40, 60).toFixed(0)}px`,
+          `--r0:${rand(-10, 10).toFixed(1)}deg`, `--r1:${rand(-6, 6).toFixed(1)}deg`, `--r2:${rand(-8, 8).toFixed(1)}deg`,
+          `--fo:${rand(0.26, 0.48).toFixed(2)}`,
+        ].join(";");
+        return `<div class="float-photo" style="${style}"><img src="${esc(a.thumb)}" alt="" loading="lazy"></div>`;
+      }).join("");
+    };
+    fill("#float-hero", 6); fill("#float-finale", 6);
   }
 
   /* ------------------------------------------------------------------
@@ -701,7 +742,7 @@
   function boot() {
     document.body.classList.add("is-locked");
     render(); initObservers(); Carousel.init(); initWishes(); initCake(); initLetter();
-    initScrollText(); initConstellation(); initNarration();
+    initScrollText(); initConstellation(); initNarration(); initAlbum(); initFloatingPhotos();
     fxEnvelope.start();
     $$("img").forEach((img) => img.addEventListener("error", () => { img.style.background = "linear-gradient(160deg,#7a2f3d,#d98b6c)"; img.alt = "Rasm topilmadi"; }, { once: true }));
     // Dev shortcut: ?skip=1 jumps straight into the site (for testing)
