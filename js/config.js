@@ -48,7 +48,7 @@ window.GIFT_CONFIG = {
 
   /* ---------- Kino-titrlar (konvert ochilgach) ---------- */
   intro: [
-    "1974-yilning bir sentyabr kuni…",
+    "1974-yilning 8-sentyabr kuni…",
     "…dunyoga bitta yulduz keldi.",
     "U yildan-yilga yorug'roq porladi — bir uyni, bir oilani, bir umrni yoritib.",
     "Bugun o'sha yulduzning kuni.",
