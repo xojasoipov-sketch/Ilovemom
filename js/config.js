@@ -204,31 +204,31 @@ window.GIFT_CONFIG = {
       name: "Katta o'g'lingiz",           // TODO: ismini yozing
       relation: "O'g'lingiz",
       text: "Onajonim, Siz bo'lmaganingizda men ham bo'lmasdim. Har bir yutug'imda Sizning duoingiz, har bir qadamimda Sizning mehringiz bor. Sog' bo'ling, uzoq umr ko'ring!",
-      audio: "",
+      audio: "assets/audio/wish-0.mp3",
     },
     {
       name: "Kichik o'g'lingiz",          // TODO: ismini yozing
       relation: "O'g'lingiz",
       text: "Katta bo'lsam ham, hali ham Sizning quchog'ingizdagidek his qilaman o'zimni. Tug'ilgan kuningiz muborak, Onajonim — mendan Sizga cheksiz mehr.",
-      audio: "",
+      audio: "assets/audio/wish-1.mp3",
     },
     {
       name: "Katta qizingiz",             // TODO: ismini yozing
       relation: "Qizingiz",
       text: "Siz menga faqat onalik emas — sabr, mehr va kuchni ham o'rgatdingiz. Bugun Sizni quchoqlab, rahmat aytgim keladi. Yaxshi ko'raman, Onajonim!",
-      audio: "",
+      audio: "assets/audio/wish-2.mp3",
     },
     {
       name: "Kichik qizingiz",            // TODO: ismini yozing
       relation: "Qizingiz",
       text: "Onajonim, Sizning kulgingiz — bizning uyimizning eng yorqin nuri. Tug'ilgan kuningiz muborak bo'lsin, hamisha shunday baxtli kuling!",
-      audio: "",
+      audio: "assets/audio/wish-3.mp3",
     },
     {
       name: "Kelinlaringiz",              // TODO: ismlarini yozing (masalan "Malika va Zarina")
       relation: "Kelinlaringiz",
       text: "Siz bizni o'z farzandingizdek qabul qildingiz, ikkinchi onamiz bo'ldingiz. Mehringiz va sabringiz uchun rahmat — tug'ilgan kuningiz muborak, Onajonim!",
-      audio: "",
+      audio: "assets/audio/wish-4.mp3",
     },
     {
       name: "Umr yo'ldoshingiz",          // TODO: ismini yozing
@@ -265,5 +265,6 @@ window.GIFT_CONFIG = {
     heading: "Sizni yaxshi ko'ramiz",
     sub: "Bu sayt — bizning kichik sovg'amiz. Lekin mehrimiz kichik emas, Onajonim.",
     replay: "Yana bir bor ko'rish",
+    audio: "assets/audio/finale.mp3",
   },
 };

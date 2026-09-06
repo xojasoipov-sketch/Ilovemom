@@ -652,11 +652,16 @@
       audio.onended = onEnd;
       audio.play().catch(() => stop());
     }
+    function playFinale() {
+      const src = C.finale && C.finale.audio;
+      if (!src) { stop(); return; }
+      playSrc(src, $("#finale"), stop);
+    }
     function playLetter() {
       const src = C.letter && C.letter.audio;
       currentChapter = -1; setChapterUI(-1, false); setToggleUI(false);
       if (!src) { stop(); return; }
-      playSrc(src, $("#paper"), stop);
+      playSrc(src, $("#paper"), playFinale);
     }
     function playChapter(i, chain) {
       const ch = chapters[i];
